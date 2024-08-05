@@ -25,3 +25,6 @@ _tmp/
 tmp/
 .tmp/
 tmp_files/
+
+# Docker Compose related files
+rest-api-test/*
