@@ -16,7 +16,8 @@ services:
       API_URL: http://backend:5000
 
   backend:
-    image: docker.io/jpdev99/rest-api-test:f193197
+    image: docker.io/jpdev99/rest-api-test:sandbox
+    restart: always
     ports:
       - "5000:3000"
     networks:
