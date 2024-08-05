@@ -1,0 +1,54 @@
+version: '3.1'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.deploy
+    ports:
+      - "8080:8080"
+    networks:
+      - joao-daibello-test
+    depends_on:
+      - backend
+    environment:
+      API_PORT: 5000
+      API_URL: http://backend:5000
+
+  backend:
+    image: docker.io/jpdev99/rest-api-test:sandbox
+    restart: always
+    ports:
+      - "5000:3000"
+    networks:
+      - joao-daibello-test
+    depends_on:
+      - db
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: postgres
+
+  db:
+    image: postgres:11
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ../rest-api-test/database/create.sql:/docker-entrypoint-initdb.d/create-schema.sql
+    networks:
+      - joao-daibello-test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+volumes:
+  db:
+    driver: local
+
+networks:
+  joao-daibello-test:
+    driver: bridge

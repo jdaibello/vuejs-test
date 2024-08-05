@@ -1,0 +1,37 @@
+FROM node:14.21.3-buster
+
+ENV USER=node \
+  USER_ID=1000 \
+  HOME=/usr/app
+
+USER root
+
+# Recreate user using workdir
+RUN deluser --remove-home $USER \
+  && echo "$USER:x:$USER_ID:$USER_ID::$HOME:/bin/sh" >> /etc/passwd \
+  && echo "$USER:x:$USER_ID:" >> /etc/group \
+  && mkdir -p $HOME \
+  && chown -R $USER:$USER $HOME
+
+WORKDIR $HOME
+
+# Update packages and install python2
+RUN apt-get update && apt-get install -y \
+  python2 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --chown=$USER:$USER package.json package-lock.json ./
+
+# Install dependencies
+RUN npm install
+
+COPY --chown=$USER:$USER . .
+
+# Used for VS Code devcontainer
+RUN chown -R $USER:$USER .config
+
+EXPOSE 8080
+
+USER $USER
+
+CMD ["npm", "run", "serve"]

@@ -1,0 +1,42 @@
+FROM node:14.21.3-buster AS builder
+
+ENV HOME=/usr/app
+
+WORKDIR $HOME
+
+# Update packages and install python2
+RUN apt-get update && apt-get install -y \
+  python2 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY . .
+
+# Install dependencies and build the app
+RUN npm install && npm run build
+
+# Serve the app
+FROM nginx:stable-alpine3.19
+
+USER root
+
+ENV USER=nginx \
+    USER_ID=101
+
+COPY --from=builder --chown=$USER_ID:USER_ID /usr/app/dist/ /usr/share/nginx/html/
+COPY --chown=$USER_ID:USER_ID nginx.conf /etc/nginx/conf.d/default.conf
+
+# Add permissions to the user
+RUN chown -R $USER_ID:$USER_ID /var/cache/nginx \
+    && chown -R $USER_ID:$USER_ID /var/log/nginx \
+    && chown -R $USER_ID:$USER_ID /etc/nginx \
+    && touch /var/run/nginx.pid \
+    && chown -R $USER_ID:$USER_ID /var/run/nginx.pid \
+    && chown $USER_ID:$USER_ID /usr/share/nginx/html/index.html \
+    && chown $USER_ID:$USER_ID /etc/nginx/conf.d/default.conf
+
+EXPOSE 8080
+
+USER $USER
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
