@@ -20,10 +20,10 @@ RUN apt-get update && apt-get install -y \
 
 # COPY --chown=$USER:$USER package.json package-lock.json ./
 
+COPY . .
+
 # Install dependencies and build the app
 RUN npm install && npm run build
-
-COPY . .
 
 # Serve the app
 FROM nginx:stable-alpine3.19
