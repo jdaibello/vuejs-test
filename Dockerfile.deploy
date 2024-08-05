@@ -2,23 +2,12 @@ FROM node:14.21.3-buster AS builder
 
 ENV HOME=/usr/app
 
-# USER root
-
-# # Recreate user using workdir
-# RUN deluser --remove-home $USER \
-#   && echo "$USER:x:$USER_ID:$USER_ID::$HOME:/bin/sh" >> /etc/passwd \
-#   && echo "$USER:x:$USER_ID:" >> /etc/group \
-#   && mkdir -p $HOME \
-#   && chown -R $USER:$USER $HOME
-
 WORKDIR $HOME
 
 # Update packages and install python2
 RUN apt-get update && apt-get install -y \
   python2 make g++ \
   && rm -rf /var/lib/apt/lists/*
-
-# COPY --chown=$USER:$USER package.json package-lock.json ./
 
 COPY . .
 
@@ -34,7 +23,7 @@ ENV USER=nginx \
     USER_ID=101
 
 COPY --from=builder --chown=$USER_ID:USER_ID /usr/app/dist/ /usr/share/nginx/html/
-COPY --chown=$USER_ID:USER_ID nginx.conf /etc/nginx/nginx.conf
+COPY --chown=$USER_ID:USER_ID nginx.conf /etc/nginx/conf.d/default.conf
 
 # Add permissions to the user
 RUN chown -R $USER_ID:$USER_ID /var/cache/nginx \
