@@ -40,5 +40,5 @@ data "aws_caller_identity" "current" {}
 ###############
 
 module "buckets" {
-  source = "./buckets"
+  source = "./modules/buckets"
 }
