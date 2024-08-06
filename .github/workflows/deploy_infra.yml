@@ -1,0 +1,62 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches:
+      - feature/*
+      - current
+      - main
+
+jobs:
+  setup:
+    name: Setup Environment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set Environment Variables
+        id: set-vars
+
+        run: |
+          COMMIT_HASH_SHORT=$(git rev-parse --short HEAD)
+          echo "COMMIT_HASH_SHORT=${COMMIT_HASH_SHORT}" >> .env
+
+          case "${GITHUB_REF#refs/heads/}" in
+            feature/*)
+              TAG=sandbox
+              ;;
+            current)
+              TAG=sandbox
+              ;;
+            # develop)
+            #   TAG=dev
+            #   ;;
+            # qa)
+            #   TAG=qa
+            #   ;;
+            # uat)
+            #   TAG=uat
+            #   ;;
+            main)
+              TAG=latest
+              ;;
+          esac
+
+          echo "DOCKER_IMAGE_TAG=${TAG}" >> .env
+          echo "TF_PLUGIN_TIMEOUT=60s" >> .env
+
+      - name: Upload .env file
+        uses: actions/upload-artifact@v3
+        with:
+          name: env-file
+          path: .env
+
+      - name: Log envs
+        run: |
+          source .env
+
+          echo "COMMIT_HASH_SHORT=$COMMIT_HASH_SHORT"
+          echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG"
+          echo "TF_PLUGIN_TIMEOUT=$TF_PLUGIN_TIMEOUT"
