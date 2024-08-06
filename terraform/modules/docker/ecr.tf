@@ -42,7 +42,7 @@ data "aws_iam_policy_document" "ecr_repository_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = [aws_iam_role.system_account_role.arn]
+      identifiers = [aws_iam_role.ecr_role.arn]
     }
   }
 }
@@ -52,7 +52,6 @@ resource "aws_iam_role" "ecr_role" {
   name               = "${var.application_name}-ecr-role"
   assume_role_policy = data.aws_iam_policy_document.ecr_assume_role_policy.json
   path               = "/"
-  depends_on         = [aws_iam_role_policy_attachment.system_account_assume_role_policy_attachement]
 }
 
 ####################
