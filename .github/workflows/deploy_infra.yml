@@ -99,6 +99,19 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+        run: |
+          source .env
+
+          echo "COMMIT_HASH_SHORT=${COMMIT_HASH_SHORT}"
+          echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"
+
+          docker buildx build --platform linux/amd64 -f Dockerfile.deploy -t $REGISTRY/$REPOSITORY:$COMMIT_HASH_SHORT -t $REGISTRY/$REPOSITORY:$DOCKER_IMAGE_TAG --push .
+          # docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
       - name: Build and push Docker image
         if: 1 > 2
 
