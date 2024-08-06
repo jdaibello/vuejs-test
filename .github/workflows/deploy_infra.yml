@@ -90,6 +90,7 @@ jobs:
         run: echo "${{ secrets.DOCKER_PAT }}" | docker login docker.io -u "$DOCKER_USERNAME" --password-stdin
 
       - name: Build and push Docker image
+        if: 1 > 2
 
         env:
           COMMIT_HASH_SHORT: ${{ env.COMMIT_HASH_SHORT }}
