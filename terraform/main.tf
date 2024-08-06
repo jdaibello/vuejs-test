@@ -5,7 +5,7 @@
 terraform {
   required_version = ">= 1.2.0"
 
-    backend "s3" {
+  backend "s3" {
     bucket         = "test-joao-daibello-frontend-terraform-state"
     key            = "terraform.tfstate"
     region         = "us-east-2"
@@ -41,4 +41,10 @@ data "aws_caller_identity" "current" {}
 
 module "buckets" {
   source = "./modules/buckets"
+}
+
+module "docker" {
+  source           = "./modules/docker"
+  application_name = var.application_name
+  aws_username     = var.aws_username
 }
