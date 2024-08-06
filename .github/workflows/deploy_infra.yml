@@ -10,7 +10,7 @@ on:
 jobs:
   setup:
     name: Setup Environment
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
@@ -63,7 +63,7 @@ jobs:
 
   docker:
     name: Build and Push Docker Image
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: setup
 
     env:
