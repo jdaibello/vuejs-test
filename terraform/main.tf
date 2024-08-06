@@ -5,6 +5,13 @@
 terraform {
   required_version = ">= 1.2.0"
 
+    backend "s3" {
+    bucket         = "test-joao-daibello-frontend-terraform-state"
+    key            = "terraform.tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "test-joao-daibello-terraform-state-frontend-locking-table"
+  }
+
   required_providers {
 
     aws = {
