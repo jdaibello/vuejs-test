@@ -27,11 +27,3 @@ provider "aws" {
 ############
 
 data "aws_caller_identity" "current" {}
-
-###############
-### MODULES ###
-###############
-
-module "buckets" {
-  source = "./buckets"
-}
