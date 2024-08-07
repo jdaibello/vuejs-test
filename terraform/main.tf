@@ -53,6 +53,9 @@ module "website" {
   source           = "./modules/website"
   application_name = var.application_name
   aws_username     = var.aws_username
+  # ca_country       = var.ca_country
+  # ca_locality      = var.ca_locality
+  # ca_organization  = var.ca_organization
 }
 
 # module "code" {

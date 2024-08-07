@@ -13,3 +13,18 @@ variable "aws_username" {
   description = "AWS username"
   type        = string
 }
+
+# variable "ca_country" {
+#   description = "CA country"
+#   type        = string
+# }
+
+# variable "ca_locality" {
+#   description = "CA locality"
+#   type        = string
+# }
+
+# variable "ca_organization" {
+#   description = "CA organization"
+#   type        = string
+# }
