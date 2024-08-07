@@ -80,17 +80,6 @@ jobs:
           name: env-file
           path: .
 
-      # - name: Install Node.js
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version: '14.21.3'
-      #     architecture: 'x64'
-
-      # - name: Install Dependencies and Build Vue.js App
-      #   run: |
-      #     npm install
-      #     npm run build
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -121,7 +110,17 @@ jobs:
           echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"
 
           docker buildx build --platform linux/amd64 -f Dockerfile.deploy -t $REGISTRY/$REPOSITORY:$COMMIT_HASH_SHORT -t $REGISTRY/$REPOSITORY:$DOCKER_IMAGE_TAG --push .
-          # docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.21.3'
+          architecture: 'x64'
+
+      - name: Install Dependencies and Build Vue.js App
+        run: |
+          npm install
+          npm run build
 
       - name: Upload dist folder to S3
         run: aws s3 sync ./dist s3://www.test-joao-daibello-frontend-website
