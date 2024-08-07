@@ -49,8 +49,8 @@ module "docker" {
   aws_username     = var.aws_username
 }
 
-module "dns" {
-  source           = "./modules/dns"
+module "website" {
+  source           = "./modules/website"
   application_name = var.application_name
   aws_username     = var.aws_username
 }
