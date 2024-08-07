@@ -7,6 +7,15 @@ resource "aws_s3_bucket" "www_bucket" {
   }
 }
 
+resource "aws_s3_bucket_versioning" "www_bucket_storage_versioning" {
+  bucket                = aws_s3_bucket.www_bucket.id
+  expected_bucket_owner = data.aws_caller_identity.current.account_id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "aws_s3_bucket_cors_configuration" "www_aws_cors" {
   bucket = aws_s3_bucket.www_bucket.bucket
 
@@ -59,6 +68,15 @@ resource "aws_s3_bucket" "root_bucket" {
 
   tags = {
     Project = "test-joao-daibello-frontend-website"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "root_bucket_storage_versioning" {
+  bucket                = aws_s3_bucket.root_bucket.id
+  expected_bucket_owner = data.aws_caller_identity.current.account_id
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
