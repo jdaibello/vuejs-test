@@ -1,0 +1,172 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches:
+      - feature/*
+      - current
+      - main
+
+jobs:
+  setup:
+    name: Setup Environment
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set Environment Variables
+        id: set-vars
+
+        run: |
+          COMMIT_HASH_SHORT=$(git rev-parse --short HEAD)
+          echo "COMMIT_HASH_SHORT=${COMMIT_HASH_SHORT}" >> .env
+
+          case "${GITHUB_REF#refs/heads/}" in
+            feature/*)
+              TAG=sandbox
+              ;;
+            current)
+              TAG=sandbox
+              ;;
+            # develop)
+            #   TAG=dev
+            #   ;;
+            # qa)
+            #   TAG=qa
+            #   ;;
+            # uat)
+            #   TAG=uat
+            #   ;;
+            main)
+              TAG=latest
+              ;;
+          esac
+
+          echo "DOCKER_IMAGE_TAG=${TAG}" >> .env
+          echo "TF_PLUGIN_TIMEOUT=60s" >> .env
+
+      - name: Upload .env file
+        uses: actions/upload-artifact@v3
+        with:
+          name: env-file
+          path: .env
+
+      - name: Log envs
+        run: |
+          source .env
+
+          echo "COMMIT_HASH_SHORT=$COMMIT_HASH_SHORT"
+          echo "DOCKER_IMAGE_TAG=$DOCKER_IMAGE_TAG"
+          echo "TF_PLUGIN_TIMEOUT=$TF_PLUGIN_TIMEOUT"
+
+  docker:
+    name: Build and Push Docker Image
+    runs-on: self-hosted
+    needs: setup
+
+    env:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      PLATFORMS: linux/amd64,linux/arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download .env file
+        uses: actions/download-artifact@v3
+        with:
+          name: env-file
+          path: .
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      #- name: Login to Docker Hub
+      #  run: echo "${{ secrets.DOCKER_PAT }}" | docker login docker.io -u "$DOCKER_USERNAME" --password-stdin
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+        run: |
+          source .env
+
+          echo "COMMIT_HASH_SHORT=${COMMIT_HASH_SHORT}"
+          echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"
+
+          docker buildx build --platform linux/amd64 -f Dockerfile.deploy -t $REGISTRY/$REPOSITORY:$COMMIT_HASH_SHORT -t $REGISTRY/$REPOSITORY:$DOCKER_IMAGE_TAG --push .
+          # docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: Build and push Docker image
+        if: 1 > 2
+
+        env:
+          COMMIT_HASH_SHORT: ${{ env.COMMIT_HASH_SHORT }}
+          DOCKER_IMAGE_TAG: ${{ env.DOCKER_IMAGE_TAG }}
+
+        run: |
+          source .env
+
+          echo "COMMIT_HASH_SHORT=${COMMIT_HASH_SHORT}"
+          echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"
+
+          docker buildx build --platform $PLATFORMS -f Dockerfile.deploy -t docker.io/$DOCKER_USERNAME/vuejs-test:${COMMIT_HASH_SHORT} -t docker.io/$DOCKER_USERNAME/vuejs-test:${DOCKER_IMAGE_TAG} --push .
+
+  terraform:
+    name: Deploy Terraform Infrastructure
+    runs-on: self-hosted
+    needs: [setup, docker]
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SANDBOX_TFVARS: ${{ secrets.SANDBOX_TFVARS }}
+      TERRAFORM_DIR: terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download .env file
+        uses: actions/download-artifact@v3
+        with:
+          name: env-file
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        run: terraform -chdir=$TERRAFORM_DIR init -input=false -reconfigure
+
+      - name: Terraform Validate
+        run: terraform -chdir=$TERRAFORM_DIR validate
+
+      - name: Prepare tfvars
+        run: |
+          source .env
+          mkdir -p ${{ runner.workspace }}/terraform/tfvars
+          touch ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
+
+          echo "$SANDBOX_TFVARS" > ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
+          echo ".sandbox.terraform=$(cat ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars)"
+
+      - name: Terraform Plan
+        run: terraform -chdir=$TERRAFORM_DIR plan -var-file=${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform -chdir=$TERRAFORM_DIR apply -auto-approve -var-file=${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
