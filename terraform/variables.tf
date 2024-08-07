@@ -44,3 +44,9 @@ variable "dockerhub_email" {
   description = "Docker Hub email"
   type        = string
 }
+
+variable "db_password" {
+  description = "Database password"
+  type        = string
+  sensitive   = true
+}

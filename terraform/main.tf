@@ -49,6 +49,13 @@ module "docker" {
   aws_username     = var.aws_username
 }
 
+module "database" {
+  source      = "./modules/database"
+  db_password = var.db_password
+  vpc_id      = module.network.vpc_id
+  subnet_ids  = module.network.private_subnets
+}
+
 module "network" {
   source           = "./modules/network"
   application_name = var.application_name
