@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "db_username" {
   description = "Database username"
   type        = string
-  default     = "admin"
+  default     = "postgres"
 }
 
 variable "db_password" {
