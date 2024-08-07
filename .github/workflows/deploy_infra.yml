@@ -80,6 +80,17 @@ jobs:
           name: env-file
           path: .
 
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.21.3'
+          architecture: 'x64'
+
+      - name: Install Dependencies and Build Vue.js App
+        run: |
+          npm install
+          npm run build
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
