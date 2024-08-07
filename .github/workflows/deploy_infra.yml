@@ -91,6 +91,9 @@ jobs:
           npm install
           npm run build
 
+      - name: Upload dist folder to S3
+        run: aws s3 sync ./dist s3://www.test-joao-daibello-frontend-website
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
