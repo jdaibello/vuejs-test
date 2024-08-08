@@ -32,3 +32,7 @@ provider "aws" {
 ############
 
 data "aws_caller_identity" "current" {}
+
+data "aws_ssm_parameter" "backend_latest_tag" {
+  name = "${var.ssm_parameter_common_arn}/backend/LATEST_TAG"
+}

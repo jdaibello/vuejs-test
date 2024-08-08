@@ -60,3 +60,27 @@ resource "aws_launch_template" "ecs_cluster_ec2_instance_launch_template" {
     http_tokens                 = "required"
   }
 }
+
+resource "aws_ecs_service" "backend_ecs_service" {
+  name                    = "${var.ecs_cluster_name}-service"
+  cluster                 = aws_ecs_cluster.ecs_cluster.id
+  desired_count           = 1
+  enable_ecs_managed_tags = true
+  launch_type             = "FARGATE"
+  propagate_tags          = "SERVICE"
+  task_definition         = aws_ecs_task_definition.backend_task_definition.arn
+
+  load_balancer {
+    container_name   = "backend"
+    container_port   = 3000
+    target_group_arn = aws_lb_target_group.backend_load_balancer_target_group.arn
+  }
+
+  network_configuration {
+    assign_public_ip = true
+    subnets          = var.vpc_public_subnets
+    security_groups  = [aws_security_group.ecs_cluster_ec2_instance_security_group.id]
+  }
+
+  depends_on = [aws_lb_listener.backend_load_balancer_listener]
+}

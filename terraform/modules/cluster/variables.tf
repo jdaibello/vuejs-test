@@ -33,6 +33,12 @@ variable "ecs_cluster_name" {
   default     = "joao-daibello-test-backend-ecs-cluster"
 }
 
+variable "ecs_cluster_name_abbr" {
+  description = "Name of the ECS cluster"
+  type        = string
+  default     = "joao-daibello-test-backend"
+}
+
 variable "ec2_image_id" {
   description = "EC2 image ID to launch the ECS cluster"
   type        = string
@@ -45,6 +51,12 @@ variable "ec2_instance_type" {
   default     = "t3.micro"
 }
 
+variable "launch_type" {
+  description = "ECS launch configuration type"
+  type        = list(string)
+  default     = ["FARGATE"]
+}
+
 variable "ssm_parameter_common_arn" {
   description = "SSM parameter store common ARN"
   type        = string
@@ -53,6 +65,11 @@ variable "ssm_parameter_common_arn" {
 variable "vpc_id" {
   description = "VPC ID"
   type        = string
+}
+
+variable "vpc_public_subnets" {
+  description = "VPC Public Subnets"
+  type        = set(string)
 }
 
 variable "vpc_private_subnets" {

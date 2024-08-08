@@ -54,6 +54,7 @@ module "cluster" {
   vpc_id                   = module.network.vpc_id
   vpc_cidr_block           = module.network.vpc_cidr_block
   vpc_private_subnets      = module.network.private_subnets
+  vpc_public_subnets       = module.network.public_subnets
 }
 
 module "docker" {

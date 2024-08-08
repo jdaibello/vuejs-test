@@ -6,15 +6,29 @@ resource "aws_security_group" "ecs_cluster_ec2_instance_security_group" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 53
-    to_port     = 53
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr_block]
   }
 
   ingress {
-    from_port   = 53
-    to_port     = 53
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "udp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
     protocol    = "udp"
     cidr_blocks = [var.vpc_cidr_block]
   }
@@ -49,8 +63,8 @@ resource "aws_security_group" "ecs_cluster_task_security_group" {
   }
 
   ingress {
-    from_port   = 3001
-    to_port     = 3001
+    from_port   = 3000
+    to_port     = 3000
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr_block]
   }
