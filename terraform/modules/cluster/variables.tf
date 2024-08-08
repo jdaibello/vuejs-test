@@ -45,6 +45,11 @@ variable "ec2_instance_type" {
   default     = "t3.micro"
 }
 
+variable "ssm_parameter_common_arn" {
+  description = "SSM parameter store common ARN"
+  type        = string
+}
+
 variable "vpc_id" {
   description = "VPC ID"
   type        = string

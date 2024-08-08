@@ -56,3 +56,8 @@ variable "ec2_image_id" {
   type        = string
   default     = "t3.medium"
 }
+
+variable "ssm_parameter_common_arn" {
+  description = "SSM parameter store common ARN"
+  type        = string
+}

@@ -48,11 +48,12 @@ module "buckets" {
 }
 
 module "cluster" {
-  source              = "./modules/cluster"
-  application_name    = var.application_name
-  vpc_id              = module.network.vpc_id
-  vpc_cidr_block      = module.network.vpc_cidr_block
-  vpc_private_subnets = module.network.private_subnets
+  source                   = "./modules/cluster"
+  application_name         = var.application_name
+  ssm_parameter_common_arn = var.ssm_parameter_common_arn
+  vpc_id                   = module.network.vpc_id
+  vpc_cidr_block           = module.network.vpc_cidr_block
+  vpc_private_subnets      = module.network.private_subnets
 }
 
 module "docker" {
