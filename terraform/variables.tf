@@ -50,3 +50,9 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "ec2_image_id" {
+  description = "EC2 image ID to launch the ECS cluster"
+  type        = string
+  default     = "t3.medium"
+}

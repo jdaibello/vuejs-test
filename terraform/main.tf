@@ -13,10 +13,14 @@ terraform {
   }
 
   required_providers {
-
     aws = {
       source  = "hashicorp/aws"
       version = "5.60.0"
+    }
+
+    cloudinit = {
+      source  = "hashicorp/cloudinit"
+      version = "2.3.4"
     }
   }
 }
@@ -41,6 +45,14 @@ data "aws_caller_identity" "current" {}
 
 module "buckets" {
   source = "./modules/buckets"
+}
+
+module "cluster" {
+  source              = "./modules/cluster"
+  application_name    = var.application_name
+  vpc_id              = module.network.vpc_id
+  vpc_cidr_block      = module.network.vpc_cidr_block
+  vpc_private_subnets = module.network.private_subnets
 }
 
 module "docker" {

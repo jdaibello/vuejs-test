@@ -1,0 +1,62 @@
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name = var.ecs_cluster_name
+
+  setting {
+    name = "containerInsights"
+    value = "enabled"
+  }
+}
+
+resource "aws_autoscaling_group" "ecs_cluster_autoscaling_group" {
+  name                 = "${var.ecs_cluster_name}-autoscaling-group"
+  desired_capacity     = var.asg_desired_size
+  min_size             = var.asg_min_size
+  max_size             = var.asg_max_size
+  metrics_granularity  = "1Minute"
+  termination_policies = ["OldestInstance"]
+  vpc_zone_identifier  = var.vpc_private_subnets
+
+  launch_template {
+    id = aws_launch_template.ecs_cluster_ec2_instance_launch_template.id
+  }
+
+  tag {
+    key                 = "AmazonECSManaged"
+    value               = "true"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_ecs_capacity_provider" "ecs_cluster_capacity_provider" {
+  name = "${var.ecs_cluster_name}-capacity-provider"
+
+  auto_scaling_group_provider {
+    auto_scaling_group_arn = aws_autoscaling_group.ecs_cluster_autoscaling_group.arn
+  }
+}
+
+#######################
+### LAUNCH TEMPLATE ###
+#######################
+
+resource "aws_launch_template" "ecs_cluster_ec2_instance_launch_template" {
+  name          = "${var.ecs_cluster_name}-launch-template"
+  image_id      = var.ec2_image_id
+  instance_type = var.ec2_instance_type
+  user_data     = data.cloudinit_config.template_config.base64_encode
+
+  network_interfaces {
+    associate_public_ip_address = false
+    security_groups             = [aws_security_group.ecs_cluster_ec2_instance_security_group.id]
+  }
+
+  iam_instance_profile {
+    name = aws_iam_instance_profile.ecs_cluster_ec2_instance_profile.name
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_put_response_hop_limit = 1
+    http_tokens                 = "required"
+  }
+}
