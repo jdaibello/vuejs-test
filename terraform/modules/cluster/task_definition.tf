@@ -13,23 +13,31 @@ resource "aws_ecs_task_definition" "backend_task_definition" {
     "cpu": 256,
     "memory": 512,
     "essential": true,
-    "image": "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${var.application_name}-backend:${data.aws_ssm_parameter.backend_latest_tag.value}",
-    "secrets": [
+    "image": "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${var.application_name}-backend:${var.ecr_latest_tag}",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${aws_cloudwatch_log_group.ecs_awslogs_group.name}",
+        "awslogs-region": "${var.aws_region}",
+        "awslogs-stream-prefix": "${aws_cloudwatch_log_group.ecs_awslogs_group.name}-backend"
+      }
+    },
+    "environment": [
       {
         "name": "DB_HOST",
-        "valueFrom": "${var.ssm_parameter_common_arn}/backend/DB_HOST"
+        "valueFrom": "${var.db_host}"
       },
       {
         "name": "DB_PASSWORD",
-        "valueFrom": "${var.ssm_parameter_common_arn}/backend/DB_PASSWORD"
+        "valueFrom": "${var.db_password}"
       },
       {
         "name": "DB_PORT",
-        "valueFrom": "${var.ssm_parameter_common_arn}/backend/DB_PORT"
+        "valueFrom": "${var.db_port}"
       },
       {
         "name": "DB_USER",
-        "valueFrom": "${var.ssm_parameter_common_arn}/backend/DB_USER"
+        "valueFrom": "${var.db_user}"
       }
     ],
     "portMappings": [

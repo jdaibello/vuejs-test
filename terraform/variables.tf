@@ -45,6 +45,17 @@ variable "dockerhub_email" {
   type        = string
 }
 
+variable "db_host" {
+  description = "Aurora DB host"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_user" {
+  description = "Aurora DB user"
+  type        = string
+}
+
 variable "db_password" {
   description = "Database password"
   type        = string

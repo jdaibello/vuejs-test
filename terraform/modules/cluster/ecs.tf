@@ -62,13 +62,14 @@ resource "aws_launch_template" "ecs_cluster_ec2_instance_launch_template" {
 }
 
 resource "aws_ecs_service" "backend_ecs_service" {
-  name                    = "${var.ecs_cluster_name}-service"
-  cluster                 = aws_ecs_cluster.ecs_cluster.id
-  desired_count           = 1
-  enable_ecs_managed_tags = true
-  launch_type             = "FARGATE"
-  propagate_tags          = "SERVICE"
-  task_definition         = aws_ecs_task_definition.backend_task_definition.arn
+  name                              = "${var.ecs_cluster_name}-service"
+  cluster                           = aws_ecs_cluster.ecs_cluster.id
+  desired_count                     = 1
+  enable_ecs_managed_tags           = true
+  launch_type                       = "FARGATE"
+  propagate_tags                    = "SERVICE"
+  task_definition                   = aws_ecs_task_definition.backend_task_definition.arn
+  health_check_grace_period_seconds = 180
 
   load_balancer {
     container_name   = "backend"

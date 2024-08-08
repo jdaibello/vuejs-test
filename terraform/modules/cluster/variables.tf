@@ -3,6 +3,12 @@ variable "application_name" {
   type = string
 }
 
+variable "awslogs_group" {
+  description = "Name of the CloudWatch Logs group for ECS"
+  type        = string
+  default     = "/aws/ecs/joao-daibello-test-backend-ecs-cluster"
+}
+
 variable "aws_region" {
   description = "AWS region"
   type        = string
@@ -25,6 +31,41 @@ variable "asg_max_size" {
   description = "Maximum number of EC2 instances in the ECS cluster"
   type        = number
   default     = 2
+}
+
+variable "db_host" {
+  description = "Aurora DB host"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_port" {
+  description = "Aurora DB port"
+  type        = number
+  default     = 5432
+}
+
+variable "db_user" {
+  description = "Aurora DB user"
+  type        = string
+}
+
+variable "db_password" {
+  description = "Aurora DB password"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_name" {
+  description = "Aurora DB name"
+  type        = string
+  default     = "backendb"
+}
+
+variable "ecr_latest_tag" {
+  description = "ECR latest tag"
+  type        = string
+  default     = "3c6a2cf"
 }
 
 variable "ecs_cluster_name" {
@@ -55,6 +96,12 @@ variable "launch_type" {
   description = "ECS launch configuration type"
   type        = list(string)
   default     = ["FARGATE"]
+}
+
+variable "log_group_retention_id_days" {
+  description = "Number of days to retain log events in the log group"
+  type        = number
+  default     = 30
 }
 
 variable "ssm_parameter_common_arn" {
