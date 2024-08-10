@@ -22,6 +22,11 @@ terraform {
       source  = "hashicorp/cloudinit"
       version = "2.3.4"
     }
+
+    random = {
+      source = "hashicorp/random"
+      version = "3.6.2"
+    }
   }
 }
 
@@ -54,6 +59,7 @@ module "cluster" {
   db_host                  = var.db_host
   db_user                  = var.db_user
   db_password              = var.db_password
+  db_security_group_id     = module.database.databse_security_group_id
   vpc_id                   = module.network.vpc_id
   vpc_cidr_block           = module.network.vpc_cidr_block
   vpc_private_subnets      = module.network.private_subnets
@@ -67,10 +73,12 @@ module "docker" {
 }
 
 module "database" {
-  source      = "./modules/database"
-  db_password = var.db_password
-  vpc_id      = module.network.vpc_id
-  subnet_ids  = module.network.private_subnets
+  source                                  = "./modules/database"
+  aws_username                            = var.aws_username
+  db_password                             = var.db_password
+  ecs_cluster_ec2_instance_security_group = module.cluster.ecs_cluster_ec2_instance_security_group.id
+  vpc_id                                  = module.network.vpc_id
+  subnet_ids                              = module.network.private_subnets
 }
 
 module "network" {

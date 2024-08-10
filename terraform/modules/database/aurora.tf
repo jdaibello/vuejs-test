@@ -3,8 +3,10 @@ resource "aws_rds_cluster" "aurora_cluster" {
   database_name             = "backendb"
   engine                    = "aurora-postgresql"
   engine_mode               = "provisioned"
-  final_snapshot_identifier = "joaodaibellotestauroraclusterfinalsnapshot"
+  final_snapshot_identifier = "joaodaibellotestauroraclusterfinalsnapshot-${random_uuid.final_snapshot_uuid_suffix.result}"
   enable_http_endpoint      = true
+  storage_encrypted         = true
+  kms_key_id                = aws_kms_key.rds_kms_key.arn
 
   timeouts {
     create = "15m"
@@ -12,7 +14,7 @@ resource "aws_rds_cluster" "aurora_cluster" {
 
   serverlessv2_scaling_configuration {
     max_capacity = 1.5
-    min_capacity = 0.5
+    min_capacity = 1
   }
 
   master_username                 = var.db_username
@@ -42,26 +44,14 @@ resource "aws_rds_cluster_instance" "aurora_serverless_instance" {
   }
 }
 
-resource "aws_security_group" "databse_security_group" {
-  name        = "${var.db_username}-test-aurora-security-group"
-  vpc_id      = var.vpc_id
+# resource "aws_rds_cluster_activity_stream" "aurora_activity_stream" {
+#   resource_arn                        = aws_rds_cluster.aurora_cluster.arn
+#   kms_key_id                          = aws_kms_key.rds_kms_key.arn
+#   mode                                = "async"
 
-  ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16", "191.254.218.115/32"]
-  }
+#   depends_on = [aws_rds_cluster_instance.aurora_serverless_instance]
+# }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
+# Random UUID
 
-resource "aws_db_subnet_group" "database_subnet_group" {
-  name       = "${var.db_username}-test-aurora-subnet-group"
-  subnet_ids = var.subnet_ids
-}
+resource "random_uuid" "final_snapshot_uuid_suffix" {}

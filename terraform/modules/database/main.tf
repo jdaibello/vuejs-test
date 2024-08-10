@@ -29,3 +29,11 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 data "aws_availability_zones" "availability_zones" {}
+
+###############
+### OUTPUTS ###
+###############
+
+output "databse_security_group_id" {
+  value = aws_security_group.databse_security_group.id
+}

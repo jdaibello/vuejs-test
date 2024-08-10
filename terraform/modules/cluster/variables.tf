@@ -92,6 +92,11 @@ variable "ec2_instance_type" {
   default     = "t4g.small"
 }
 
+variable "db_security_group_id" {
+  description = "Database security group ID"
+  type        = string
+}
+
 variable "launch_type" {
   description = "ECS launch configuration type"
   type        = list(string)

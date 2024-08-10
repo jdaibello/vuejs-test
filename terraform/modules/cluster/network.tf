@@ -26,6 +26,13 @@ resource "aws_security_group" "ecs_cluster_ec2_instance_security_group" {
     cidr_blocks = [var.vpc_cidr_block]
   }
 
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [var.db_security_group_id]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0

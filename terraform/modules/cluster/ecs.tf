@@ -46,8 +46,9 @@ resource "aws_launch_template" "ecs_cluster_ec2_instance_launch_template" {
   user_data     = data.cloudinit_config.template_config.base64_encode
 
   network_interfaces {
-    associate_public_ip_address = true
+    associate_public_ip_address = false
     security_groups             = [aws_security_group.ecs_cluster_ec2_instance_security_group.id]
+    subnet_id                   = tolist(var.vpc_private_subnets)[1]
   }
 
   iam_instance_profile {
@@ -79,8 +80,8 @@ resource "aws_ecs_service" "backend_ecs_service" {
 
   #* Work only when network_type is awsvpc and launch_type is FARAGATE
   network_configuration {
-    assign_public_ip = true
-    subnets          = var.vpc_public_subnets
+    assign_public_ip = false
+    subnets          = var.vpc_private_subnets
     security_groups  = [aws_security_group.ecs_cluster_ec2_instance_security_group.id]
   }
 
