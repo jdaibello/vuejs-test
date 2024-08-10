@@ -65,7 +65,7 @@ variable "db_name" {
 variable "ecr_latest_tag" {
   description = "ECR latest tag"
   type        = string
-  default     = "3c6a2cf"
+  default     = "95c409c"
 }
 
 variable "ecs_cluster_name" {
@@ -89,13 +89,13 @@ variable "ec2_image_id" {
 variable "ec2_instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t3.micro"
+  default     = "t4g.small"
 }
 
 variable "launch_type" {
   description = "ECS launch configuration type"
   type        = list(string)
-  default     = ["FARGATE"]
+  default     = ["FARGATE", "EC2"]
 }
 
 variable "log_group_retention_id_days" {

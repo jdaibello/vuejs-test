@@ -24,27 +24,56 @@ resource "aws_ecs_task_definition" "backend_task_definition" {
     },
     "environment": [
       {
+        "name": "NODE_ENV",
+        "value": "production"
+      },
+      {
+        "name": "USER",
+        "value": "node"
+      },
+      {
+        "name": "USER_ID",
+        "value": "1000"
+      },
+      {
+        "name": "HOME",
+        "value": "/usr/app"
+      },
+      {
+        "name": "SERVER_PORT",
+        "value": "3000"
+      },
+      {
         "name": "DB_HOST",
-        "valueFrom": "${var.db_host}"
+        "value": "${var.db_host}"
       },
       {
         "name": "DB_PASSWORD",
-        "valueFrom": "${var.db_password}"
+        "value": "${var.db_password}"
       },
       {
         "name": "DB_PORT",
-        "valueFrom": "${var.db_port}"
+        "value": "${var.db_port}"
       },
       {
         "name": "DB_USER",
-        "valueFrom": "${var.db_user}"
+        "value": "${var.db_user}"
       }
     ],
     "portMappings": [
       {
-        "containerPort": 3000
+        "containerPort": 3000,
+        "hostPort": 3000,
+        "protocol": "tcp"
       }
-    ]
+    ],
+    "healthCheck": {
+      "command": ["CMD-SHELL", "curl -f http://localhost:3000/healthcheck || exit 1"],
+      "interval": 10,
+      "timeout": 30,
+      "retries": 5,
+      "startPeriod": 5
+    }
   }
 ]
 TASK_DEFINITION

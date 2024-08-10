@@ -15,10 +15,11 @@ resource "aws_rds_cluster" "aurora_cluster" {
     min_capacity = 0.5
   }
 
-  master_username        = var.db_username
-  master_password        = var.db_password
-  vpc_security_group_ids = [aws_security_group.databse_security_group.id]
-  db_subnet_group_name   = aws_db_subnet_group.database_subnet_group.name
+  master_username                 = var.db_username
+  master_password                 = var.db_password
+  vpc_security_group_ids          = [aws_security_group.databse_security_group.id]
+  db_subnet_group_name            = aws_db_subnet_group.database_subnet_group.name
+  enabled_cloudwatch_logs_exports = ["postgresql"]
 
   tags = {
     Project = "Backend"

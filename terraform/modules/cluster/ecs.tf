@@ -14,7 +14,7 @@ resource "aws_autoscaling_group" "ecs_cluster_autoscaling_group" {
   max_size             = var.asg_max_size
   metrics_granularity  = "1Minute"
   termination_policies = ["OldestInstance"]
-  vpc_zone_identifier  = var.vpc_private_subnets
+  vpc_zone_identifier  = var.vpc_public_subnets
 
   launch_template {
     id = aws_launch_template.ecs_cluster_ec2_instance_launch_template.id
@@ -46,7 +46,7 @@ resource "aws_launch_template" "ecs_cluster_ec2_instance_launch_template" {
   user_data     = data.cloudinit_config.template_config.base64_encode
 
   network_interfaces {
-    associate_public_ip_address = false
+    associate_public_ip_address = true
     security_groups             = [aws_security_group.ecs_cluster_ec2_instance_security_group.id]
   }
 
@@ -66,10 +66,10 @@ resource "aws_ecs_service" "backend_ecs_service" {
   cluster                           = aws_ecs_cluster.ecs_cluster.id
   desired_count                     = 1
   enable_ecs_managed_tags           = true
-  launch_type                       = "FARGATE"
+  launch_type                       = "FARGATE" # Differents ports mapping only works with EC2 launch type
   propagate_tags                    = "SERVICE"
   task_definition                   = aws_ecs_task_definition.backend_task_definition.arn
-  health_check_grace_period_seconds = 180
+  health_check_grace_period_seconds = 60
 
   load_balancer {
     container_name   = "backend"
@@ -77,11 +77,12 @@ resource "aws_ecs_service" "backend_ecs_service" {
     target_group_arn = aws_lb_target_group.backend_load_balancer_target_group.arn
   }
 
+  #* Work only when network_type is awsvpc and launch_type is FARAGATE
   network_configuration {
     assign_public_ip = true
     subnets          = var.vpc_public_subnets
     security_groups  = [aws_security_group.ecs_cluster_ec2_instance_security_group.id]
   }
 
-  depends_on = [aws_lb_listener.backend_load_balancer_listener]
+  depends_on = [aws_lb_listener.backend_load_balancer_listener, aws_autoscaling_group.ecs_cluster_autoscaling_group]
 }

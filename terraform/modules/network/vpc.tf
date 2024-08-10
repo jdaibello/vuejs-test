@@ -54,9 +54,9 @@ resource "aws_route_table_association" "public_route_table_association" {
   route_table_id = aws_route_table.public_route_table.id
 }
 
-resource "aws_eip" "nat" {}
+# resource "aws_eip" "nat" {}
 
-resource "aws_nat_gateway" "nat" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public_subnet[0].id
-}
+# resource "aws_nat_gateway" "nat" {
+#   allocation_id = aws_eip.nat.id
+#   subnet_id     = aws_subnet.public_subnet[0].id
+# }
