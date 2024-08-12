@@ -1,6 +1,6 @@
 variable "application_name" {
   description = "Application name"
-  type = string
+  type        = string
 }
 
 variable "aws_region" {
@@ -11,6 +11,11 @@ variable "aws_region" {
 
 variable "aws_username" {
   description = "AWS username"
+  type        = string
+}
+
+variable "backend_alb_url" {
+  description = "Application Load Balancer URL for backend"
   type        = string
 }
 

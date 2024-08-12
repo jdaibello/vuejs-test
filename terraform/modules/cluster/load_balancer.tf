@@ -38,3 +38,11 @@ resource "aws_lb_listener" "backend_load_balancer_listener" {
     replace_triggered_by = [aws_lb_target_group.backend_load_balancer_target_group.id]
   }
 }
+
+###############
+### OUTPUTS ###
+###############
+
+output "backend_alb_url" {
+  value = aws_lb.backend_load_balancer.dns_name
+}
