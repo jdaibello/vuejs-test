@@ -88,7 +88,7 @@ variable "ec2_image_id" {
 variable "ec2_instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t4g.small"
+  default     = "t4g.micro"
 }
 
 variable "db_security_group_id" {
