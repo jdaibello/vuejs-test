@@ -68,6 +68,11 @@ variable "ec2_image_id" {
   default     = "t3.medium"
 }
 
+variable "ecr_latest_tag" {
+  description = "ECR latest tag"
+  type        = string
+}
+
 variable "ssm_parameter_common_arn" {
   description = "SSM parameter store common ARN"
   type        = string

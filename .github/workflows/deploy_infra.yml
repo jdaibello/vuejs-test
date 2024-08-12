@@ -175,13 +175,22 @@ jobs:
       - name: Terraform Validate
         run: terraform -chdir=$TERRAFORM_DIR validate
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Prepare tfvars
         run: |
           source .env
+          BACKEND_ERC_LATEST_TAG=$(aws ssm get-parameter --name /joao-daibello-test/backend/LATEST_TAG --with-decryption --query 'Parameter.Value' --output text)
+
           mkdir -p ${{ runner.workspace }}/terraform/tfvars
           touch ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
 
           echo "$SANDBOX_TFVARS" > ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
+          sed -i '' 's|ecr_latest_tag = .*|ecr_latest_tag = "'$BACKEND_ERC_LATEST_TAG'"|' ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
+
           echo ".sandbox.terraform=$(cat ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars)"
 
       - name: Terraform Plan

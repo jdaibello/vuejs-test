@@ -55,11 +55,12 @@ module "buckets" {
 module "cluster" {
   source                   = "./modules/cluster"
   application_name         = var.application_name
-  ssm_parameter_common_arn = var.ssm_parameter_common_arn
   db_host                  = var.db_host
   db_user                  = var.db_user
   db_password              = var.db_password
   db_security_group_id     = module.database.databse_security_group_id
+  ecr_latest_tag           = var.ecr_latest_tag
+  ssm_parameter_common_arn = var.ssm_parameter_common_arn
   vpc_id                   = module.network.vpc_id
   vpc_cidr_block           = module.network.vpc_cidr_block
   vpc_private_subnets      = module.network.private_subnets

@@ -65,7 +65,6 @@ variable "db_name" {
 variable "ecr_latest_tag" {
   description = "ECR latest tag"
   type        = string
-  default     = "95c409c"
 }
 
 variable "ecs_cluster_name" {
