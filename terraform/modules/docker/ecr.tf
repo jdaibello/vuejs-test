@@ -4,7 +4,8 @@
 
 locals {
   ecr_repositories = [
-    "frontend"
+    "frontend",
+    "backend"
   ]
 }
 

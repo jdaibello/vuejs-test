@@ -6,7 +6,35 @@ locals {
   system_account_role_managed_policies = [
     # "arn:aws:iam::aws:policy/AdministratorAccess",
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess",
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
   ]
+}
+
+resource "aws_iam_policy" "s3_full_access_policy" {
+  name        = "S3FullAccessPolicy"
+  description = "Policy to allow full access to S3 buckets"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:CreateBucket",
+          "s3:PutBucketAcl",
+          "s3:PutBucketPolicy",
+          "s3:PutBucketVersioning",
+          "s3:PutBucketCORS",
+          "s3:PutBucketWebsite",
+          "s3:GetBucketLocation",
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 resource "aws_iam_policy" "user_assume_role_policy" {
@@ -40,7 +68,7 @@ data "aws_iam_policy_document" "system_account_assume_role_policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "AWS"
+      type        = "AWS"
       identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${var.aws_username}"]
     }
   }
@@ -50,7 +78,7 @@ data "aws_iam_policy_document" "system_account_assume_role_policy" {
     actions = ["sts:TagSession"]
 
     principals {
-      type = "AWS"
+      type        = "AWS"
       identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${var.aws_username}"]
     }
   }
@@ -58,6 +86,11 @@ data "aws_iam_policy_document" "system_account_assume_role_policy" {
 
 resource "aws_iam_role" "github_actions_role" {
   name               = "${var.application_name}-github-actions-role"
+  assume_role_policy = data.aws_iam_policy_document.system_account_assume_role_policy.json
+}
+
+resource "aws_iam_role" "s3_full_access_role" {
+  name               = "${var.application_name}-s3-full-access-role"
   assume_role_policy = data.aws_iam_policy_document.system_account_assume_role_policy.json
 }
 
@@ -94,4 +127,9 @@ resource "aws_iam_policy" "github_actions_policy" {
 resource "aws_iam_role_policy_attachment" "attach_github_actions_policy" {
   role       = aws_iam_role.github_actions_role.name
   policy_arn = aws_iam_policy.github_actions_policy.arn
+}
+
+resource "aws_iam_user_policy_attachment" "attach_s3_full_access_policy" {
+  user       = var.aws_username
+  policy_arn = aws_iam_policy.s3_full_access_policy.arn
 }

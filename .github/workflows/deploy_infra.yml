@@ -110,7 +110,26 @@ jobs:
           echo "DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}"
 
           docker buildx build --platform linux/amd64 -f Dockerfile.deploy -t $REGISTRY/$REPOSITORY:$COMMIT_HASH_SHORT -t $REGISTRY/$REPOSITORY:$DOCKER_IMAGE_TAG --push .
-          # docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.21.3'
+          architecture: 'x64'
+
+      - name: Update Vue.js environment variables
+        run: |
+          sed -i '' "s|export const API_PORT = .*|export const API_PORT = '${{ secrets.API_PORT }}';|" ${{ runner.workspace }}/vuejs-test/src/.env.js
+          sed -i '' "s|export const API_URL = .*|export const API_URL = '${{ secrets.API_URL }}';|" ${{ runner.workspace }}/vuejs-test/src/.env.js
+          sed -i '' "s|export const DOMAIN_TITLE = .*|export const DOMAIN_TITLE = '${{ secrets.DOMAIN_TITLE }}';|" ${{ runner.workspace }}/vuejs-test/src/.env.js
+
+      - name: Install Dependencies and Build Vue.js App
+        run: |
+          npm install
+          npm run build
+
+      - name: Upload dist folder to S3
+        run: aws s3 sync ./dist s3://www.test-joao-daibello-frontend-website
 
       - name: Build and push Docker image
         if: 1 > 2
@@ -156,13 +175,22 @@ jobs:
       - name: Terraform Validate
         run: terraform -chdir=$TERRAFORM_DIR validate
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Prepare tfvars
         run: |
           source .env
+          BACKEND_ERC_LATEST_TAG=$(aws ssm get-parameter --name /joao-daibello-test/backend/LATEST_TAG --with-decryption --query 'Parameter.Value' --output text)
+
           mkdir -p ${{ runner.workspace }}/terraform/tfvars
           touch ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
 
           echo "$SANDBOX_TFVARS" > ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
+          sed -i '' 's|ecr_latest_tag = .*|ecr_latest_tag = "'$BACKEND_ERC_LATEST_TAG'"|' ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars
+
           echo ".sandbox.terraform=$(cat ${{ runner.workspace }}/terraform/tfvars/.sandbox.tfvars)"
 
       - name: Terraform Plan

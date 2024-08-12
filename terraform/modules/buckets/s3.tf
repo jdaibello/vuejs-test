@@ -1,3 +1,4 @@
+# tfstate bucket
 resource "aws_s3_bucket" "tfstate_remote_storage" {
   bucket = "test-joao-daibello-frontend-terraform-state"
 
@@ -14,6 +15,10 @@ resource "aws_s3_bucket_versioning" "tfstate_storage_versioning" {
     status = "Enabled"
   }
 }
+
+############
+### DATA ###
+############
 
 data "aws_iam_policy_document" "tfstate_bucket_policy" {
   statement {
